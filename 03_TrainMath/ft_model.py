@@ -32,10 +32,10 @@ SEED = 42
 MAX_LENGTH = 128
 
 # Keep this small for the first CPU test.
-TRAIN_SAMPLES = 200
+TRAIN_SAMPLES = 2000
 TEST_SAMPLES = 50
 
-EPOCHS = 2
+EPOCHS = 100
 
 LEARNING_RATE = 2e-4
 
