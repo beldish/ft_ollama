@@ -22,6 +22,7 @@ from peft import (
 # ============================================================
 # Configuration
 # ============================================================
+RUN_ON_GPU = False  # Set to True if you have a GPU and want to use it.
 
 MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 
@@ -35,7 +36,7 @@ MAX_LENGTH = 128
 TRAIN_SAMPLES = 2000
 TEST_SAMPLES = 50
 
-EPOCHS = 100
+EPOCHS = 5 
 
 LEARNING_RATE = 2e-4
 
@@ -46,6 +47,9 @@ LEARNING_RATE = 2e-4
 
 random.seed(SEED)
 torch.manual_seed(SEED)
+
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(SEED)
 
 
 # ============================================================
@@ -342,6 +346,11 @@ def model_answer(model, tokenizer, question):
         return_tensors="pt",
     )
 
+    inputs = {
+        key: value.to(model.device)
+        for key, value in inputs.items()
+    }
+
     with torch.no_grad():
 
         generated = model.generate(
@@ -489,7 +498,7 @@ def main():
 
     print()
     print("=" * 70)
-    print("CPU Qwen2.5 Arithmetic LoRA Experiment")
+    print("Qwen2.5 Arithmetic LoRA Experiment")
     print("=" * 70)
 
     print()
@@ -499,6 +508,29 @@ def main():
     print()
     print("CUDA available:")
     print(torch.cuda.is_available())
+
+    if RUN_ON_GPU and not torch.cuda.is_available():
+        print()
+        print(
+            "RUN_ON_GPU is True, but CUDA is not available. "
+            "Falling back to CPU."
+        )
+
+    device = torch.device(
+        "cuda"
+        if RUN_ON_GPU and torch.cuda.is_available()
+        else "cpu"
+    )
+
+    model_dtype = (
+        torch.float16
+        if device.type == "cuda"
+        else torch.float32
+    )
+
+    print()
+    print("Using device:")
+    print(device)
 
     print()
     print(
@@ -564,15 +596,15 @@ def main():
     # --------------------------------------------------------
 
     print()
-    print("Loading model on CPU...")
+    print(f"Loading model on {device}...")
 
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_NAME,
-        torch_dtype=torch.float32,
+        torch_dtype=model_dtype,
         device_map=None,
     )
 
-    model.to("cpu")
+    model.to(device)
 
     model.config.use_cache = False
 
@@ -678,11 +710,11 @@ def main():
 
         report_to="none",
 
-        fp16=False,
+        fp16=device.type == "cuda",
 
         bf16=False,
 
-        use_cpu=True,
+        use_cpu=device.type == "cpu",
 
         remove_unused_columns=False,
 
@@ -707,7 +739,7 @@ def main():
 
     print()
     print("=" * 70)
-    print("STARTING CPU TRAINING")
+    print(f"STARTING {device.type.upper()} TRAINING")
     print("=" * 70)
 
     trainer.train()
@@ -769,4 +801,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
