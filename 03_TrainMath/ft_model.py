@@ -22,7 +22,7 @@ from peft import (
 # ============================================================
 # Configuration
 # ============================================================
-RUN_ON_GPU = False  # Set to True if you have a GPU and want to use it.
+RUN_ON_GPU = True  # Set to True if you have a GPU and want to use it.
 
 MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 
@@ -33,7 +33,7 @@ SEED = 42
 MAX_LENGTH = 128
 
 # Keep this small for the first CPU test.
-TRAIN_SAMPLES = 2000
+TRAIN_SAMPLES = 500
 TEST_SAMPLES = 50
 
 EPOCHS = 5 
@@ -600,7 +600,7 @@ def main():
 
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_NAME,
-        torch_dtype=model_dtype,
+        dtype=model_dtype,
         device_map=None,
     )
 

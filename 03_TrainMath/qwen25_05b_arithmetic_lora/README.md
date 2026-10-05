@@ -4,18 +4,13 @@ library_name: peft
 pipeline_tag: text-generation
 license: apache-2.0
 tags:
-  - qwen
-  - qwen2
-  - lora
-  - peft
-  - adapter
-  - text-generation
-  - arithmetic
-  - synthetic-data
+- base_model:adapter:Qwen/Qwen2.5-0.5B-Instruct
+- lora
+- transformers
 datasets:
-  - synthetic
+- synthetic
 language:
-  - en
+- en
 ---
 
 # Qwen2.5 0.5B Arithmetic LoRA
@@ -69,3 +64,6 @@ expressions. No private or external dataset was used.
 
 The adapter was trained for a narrow toy task. It may fail outside the numeric
 ranges or prompt format used during training.
+### Framework versions
+
+- PEFT 0.21.0
